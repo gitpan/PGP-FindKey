@@ -1,13 +1,13 @@
 Status:
 
-Initial release of PGP::FindKey.  Suggestions/bug reports/patches
+Second release of PGP::FindKey.  Suggestions/bug reports/patches
 greatly appreciated.
 
 Description:
 
 This perl module is an interface to the PGP WWW keyservers.  It allows
-an e-mail address to be passed to it, and will return a keyid if there
-is a distinct match for the address.
+an e-mail address to be passed to it, and will return a keyid and name
+if there is a distinct match for the address.
 
 Installation:
 

@@ -3,7 +3,7 @@ package PGP::FindKey;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 use LWP::UserAgent;
 use HTTP::Request;
@@ -50,15 +50,26 @@ sub _init {
 	my $page = $res->content;
 	
 	# Parse the response page.  $count contains number of re matches. 
-	#                           type / size / keyid
-	my $count =()= $page =~ m!pub  \d{4}/<a.*?href.*?>(.{8})!g;
+	# An example of the html response is:
+	#
+	# pub  1024/<a href="/pks/lookup?op=get&search=0x7C2F31DF">7C2F31DF\
+	# </a> 2001/08/28 Chris J. Ball &lt;<a href="/pks/lookup?op=get&search\
+	# =0x7C2F31DF">chris@void.printf.net</a>&gt;
 
-	# We must only have one key match.  This is explained POD-wards.
-	return undef unless $count == 1;
+	my $count =()= $page =~ m!pub  \d{4}/<a.*?href.*?>(.{8})</a> \d{4}/\d{2}/\d{2} (.*) &lt!g;
+
+	# We must only have two matches; one for keyid, one for name.  Zero
+	# matches signifies a missed search, and more than two would signify
+	# multiple matches.  The reason for giving up and returning undef in
+	# the latter case is explained POD-wards.
+	
+	return undef unless $count == 2;
 	$self->{_result} = $1;
+	$self->{_name} = $2;
 	return $self;
 }
 
+sub name { return $_[0]->{_name} }
 sub result { return $_[0]->{_result} }
 
 1;
@@ -76,30 +87,32 @@ PGP::FindKey - Perl interface to finding PGP keyids from e-mail addresses.
 	  'address' 	=> 'remote_user@their.address' );
   die( "The key could not be found, or there was one than one match.\n" ) unless defined($obj);
 
-  print $obj->result;	# the keyid for $obj->address. 
+  print $obj->result;	# the keyid found. 
+  print $obj->name;	# the name associated with the key.
+
+  # We could call `gpg --recv-key $obj->result` here.
 
 =head1 DESCRIPTION
 
 Perl interface to finding PGP keyids from e-mail addresses.
 
-=head1 METHODS
+=head1 METHOD
 
-=over 4
+B<new> - Creates a new PGP::FindKey object.  Parameters:
 
-=item new
-
-Creates a new PGP::FindKey object.  Parameters:
-
-address:	(mandatory)	E-mail address to be translated.
-keyserver:	(optional)	Default to 'keyserver.pgp.com'.
-path:		(optional)	Default to '/pks/lookup?'.
-command:	(optional)	Default to '?op=index&search='.
-
-=back
+  address:   (mandatory) E-mail address to be translated.
+  keyserver: Default to 'keyserver.pgp.com'.
+  path:	     Default to '/pks/lookup?'.
+  command:   Default to '?op=index&search='.
 
 =head1 NOTES
 
-The module will return undef if more than one key is present for an address.  Quite simply, this is because not verifying the authenticity of the public key in this case would be foolish. 
+The module will return undef if more than one key is present for an
+address.  This is because that we - or indeed, the user - have no way
+of knowing which key they're after in this case, and it would be a
+bad idea to encourage them to encrypt to a random public key.  This
+limitation will be addressed when a $want_array param is implemented,
+and the choice can be given to the user if required.
 
 =head1 TODO
 

@@ -4,4 +4,4 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'	=> 'PGP::FindKey',
     'VERSION_FROM' => 'FindKey.pm', # finds $VERSION
-);
+    'PREREQ_PM' => { LWP::UserAgent => 0, URI::Escape => 0, HTTP::Request => 0 } );

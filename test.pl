@@ -13,7 +13,7 @@ print "If you need to use a proxy, make sure the http_proxy variable is set.\n\n
 
 $obj = new PGP::FindKey
 	('keyserver' => 'keyserver.pgp.com',
-	 'address'   => 'chris@epiphyte.com');
+	 'address'   => 'prz@mit.edu');
 
-if (defined($obj)) { print "Key search successful; keyid: ".$obj->result."\n"; }
+if (defined($obj)) { print "Key search successful; name: ".$obj->name.", keyid: ".$obj->result."\n"; }
 else { warn "Key search FAILED.\n"; }
